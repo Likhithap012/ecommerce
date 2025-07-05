@@ -8,7 +8,16 @@
         <option value="$PROJECT_DIR$/service/user-service/pom.xml" />
         <option value="$PROJECT_DIR$/service/product-service/pom.xml" />
         <option value="$PROJECT_DIR$/service/config-server/pom.xml" />
+        <option value="$PROJECT_DIR$/service/product/pom.xml" />
+        <option value="$PROJECT_DIR$/service/gateway/pom.xml" />
+        <option value="$PROJECT_DIR$/service/order/pom.xml" />
+        <option value="$PROJECT_DIR$/service/payment/pom.xml" />
       </list>
+    </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/service/product-service/pom.xml" />
+      </set>
     </option>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_17" default="true" project-jdk-name="17" project-jdk-type="JavaSDK">
