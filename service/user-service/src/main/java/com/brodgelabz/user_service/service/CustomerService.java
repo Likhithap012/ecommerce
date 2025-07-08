@@ -6,6 +6,7 @@ import com.brodgelabz.user_service.dto.CustomerResponse;
 import com.brodgelabz.user_service.entity.Customer;
 import com.brodgelabz.user_service.exception.CustomerNotFoundException;
 import com.brodgelabz.user_service.repository.CustomerRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
@@ -23,11 +24,11 @@ public class CustomerService {
         var customer = this.repository.save(mapper.toCustomer(request));
         return customer.getId();
     }
-
-    public void updateCustomer(CustomerRequest request) {
-        var customer = this.repository.findById(request.id())
+    @Transactional
+    public void updateCustomer(Integer customerId, CustomerRequest request) {
+        var customer = this.repository.findById(customerId)
                 .orElseThrow(() -> new CustomerNotFoundException(
-                        String.format("Cannot update customer:: No customer found with the provided ID: %s", request.id())
+                        String.format("Cannot update customer:: No customer found with the provided ID: %s", customerId)
                 ));
         mergeCustomer(customer, request);
         this.repository.save(customer);

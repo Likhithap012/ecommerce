@@ -9,12 +9,7 @@ import com.learning.order.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/orders")
@@ -41,4 +36,19 @@ public class OrderController {
     ) {
         return ResponseEntity.ok(this.service.findById(orderId));
     }
+
+    @DeleteMapping("/{order-id}")
+    public ResponseEntity<String> cancelOrder(@PathVariable("order-id") Integer orderId) {
+        service.cancelOrder(orderId);
+        return ResponseEntity.ok(" Order with ID " + orderId + " has been deleted successfully.");
+    }
+
+
+    @GetMapping("/customer/{customer-id}")
+    public ResponseEntity<List<OrderResponse>> getOrdersByCustomer(
+            @PathVariable("customer-id") Integer customerId) {
+        return ResponseEntity.ok(service.findOrdersByCustomerId(customerId));
+    }
+
+
 }

@@ -24,13 +24,15 @@ public class CustomerController {
         return ResponseEntity.ok(this.service.createCustomer(request));
     }
 
-    @PutMapping
-    public ResponseEntity<Void> updateCustomer(
+    @PutMapping("/{customer-id}")
+    public ResponseEntity<String> updateCustomer(
+            @PathVariable("customer-id") Integer customerId,
             @RequestBody @Valid CustomerRequest request
     ) {
-        this.service.updateCustomer(request);
-        return ResponseEntity.accepted().build();
+        this.service.updateCustomer(customerId, request);
+        return ResponseEntity.ok("Customer updated successfully.");
     }
+
 
     @GetMapping
     public ResponseEntity<List<CustomerResponse>> findAll() {
@@ -52,11 +54,11 @@ public class CustomerController {
     }
 
     @DeleteMapping("/{customer-id}")
-    public ResponseEntity<Void> delete(
+    public ResponseEntity<String> delete(
             @PathVariable("customer-id") Integer customerId
     ) {
         this.service.deleteCustomer(customerId);
-        return ResponseEntity.accepted().build();
+        return ResponseEntity.ok("Customer updated successfully.");
     }
 
 }

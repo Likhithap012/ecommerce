@@ -10,10 +10,12 @@ public class PaymentMapper {
       return null;
     }
     return Payment.builder()
-        .id(request.id())
-        .paymentMethod(request.paymentMethod())
-        .amount(request.amount())
-        .orderId(request.orderId())
-        .build();
+            .paymentMethod(request.paymentMethod())
+            .amount(request.amount())
+            .orderId(request.orderId())
+            .build();
+
   }
+
 }
+

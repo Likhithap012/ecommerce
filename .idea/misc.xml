@@ -12,6 +12,7 @@
         <option value="$PROJECT_DIR$/service/gateway/pom.xml" />
         <option value="$PROJECT_DIR$/service/order/pom.xml" />
         <option value="$PROJECT_DIR$/service/payment/pom.xml" />
+        <option value="$PROJECT_DIR$/service/category/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">

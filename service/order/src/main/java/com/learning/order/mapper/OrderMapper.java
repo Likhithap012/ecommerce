@@ -15,7 +15,6 @@ public class OrderMapper {
             return null;
         }
         return Order.builder()
-                .id(request.id())
                 .reference(request.reference())
                 .paymentMethod(request.paymentMethod())
                 .customerId(request.customerId())

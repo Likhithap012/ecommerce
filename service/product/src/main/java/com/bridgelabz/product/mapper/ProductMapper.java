@@ -1,15 +1,17 @@
 package com.bridgelabz.product.mapper;
 
-
-import com.bridgelabz.product.dto.ProductPurchaseResponse;
-import com.bridgelabz.product.dto.ProductRequest;
-import com.bridgelabz.product.dto.ProductResponse;
-import com.bridgelabz.product.entity.Category;
+import com.bridgelabz.product.client.CategoryClient;
+import com.bridgelabz.product.dto.*;
 import com.bridgelabz.product.entity.Product;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ProductMapper {
+
+    private final CategoryClient categoryClient;
+
     public Product toProduct(ProductRequest request) {
         return Product.builder()
                 .id(request.id())
@@ -17,24 +19,22 @@ public class ProductMapper {
                 .description(request.description())
                 .availableQuantity(request.availableQuantity())
                 .price(request.price())
-                .category(
-                        Category.builder()
-                                .id(request.categoryId())
-                                .build()
-                )
+                .categoryId(request.categoryId())
                 .build();
     }
 
     public ProductResponse toProductResponse(Product product) {
+        var category = categoryClient.getCategoryById(product.getCategoryId());
+
         return new ProductResponse(
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
                 product.getAvailableQuantity(),
                 product.getPrice(),
-                product.getCategory().getId(),
-                product.getCategory().getName(),
-                product.getCategory().getDescription()
+                category.id(),
+                category.name(),
+                category.description()
         );
     }
 

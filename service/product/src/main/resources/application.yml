@@ -3,3 +3,9 @@ spring:
     import: optional:configserver:http://localhost:8888
   application:
     name: product-service
+  management:
+    tracing:
+      enabled: false
+    zipkin:
+      tracing:
+        enabled: false

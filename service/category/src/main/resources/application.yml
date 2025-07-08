@@ -1,0 +1,12 @@
+spring:
+  config:
+    import: optional:configserver:http://localhost:8888
+  application:
+    name: category-service
+  management:
+    tracing:
+      enabled: false
+    zipkin:
+      tracing:
+        enabled: false
+

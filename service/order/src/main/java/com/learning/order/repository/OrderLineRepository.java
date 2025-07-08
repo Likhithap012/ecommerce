@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface OrderLineRepository extends JpaRepository<OrderLine,Integer> {
     List<OrderLine> findAllByOrderId(Integer orderId);
+    void deleteAllByOrderId(Integer orderId);
 }

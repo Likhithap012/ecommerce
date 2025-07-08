@@ -27,4 +27,8 @@ public class OrderLineService {
                 .map(mapper::toOrderLineResponse)
                 .collect(Collectors.toList());
     }
+    public void deleteByOrderId(Integer orderId) {
+        repository.deleteAllByOrderId(orderId);
+    }
+
 }
