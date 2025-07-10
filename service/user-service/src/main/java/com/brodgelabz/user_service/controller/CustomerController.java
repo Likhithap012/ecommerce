@@ -58,7 +58,7 @@ public class CustomerController {
             @PathVariable("customer-id") Integer customerId
     ) {
         this.service.deleteCustomer(customerId);
-        return ResponseEntity.ok("Customer updated successfully.");
+        return ResponseEntity.ok("Customer deleted successfully.");
     }
 
 }

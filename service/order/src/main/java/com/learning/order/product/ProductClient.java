@@ -4,6 +4,7 @@ package com.learning.order.product;
 import com.learning.order.dto.PurchaseRequest;
 import com.learning.order.dto.PurchaseResponse;
 import com.learning.order.exception.BusinessException;
+import com.learning.order.exception.ProductServiceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -26,23 +27,28 @@ public class ProductClient {
     private final RestTemplate restTemplate;
 
     public List<PurchaseResponse> purchaseProducts(List<PurchaseRequest> requestBody) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set(CONTENT_TYPE, APPLICATION_JSON_VALUE);
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set(CONTENT_TYPE, APPLICATION_JSON_VALUE);
+            HttpEntity<List<PurchaseRequest>> requestEntity = new HttpEntity<>(requestBody, headers);
+            ParameterizedTypeReference<List<PurchaseResponse>> responseType = new ParameterizedTypeReference<>() {};
 
-        HttpEntity<List<PurchaseRequest>> requestEntity = new HttpEntity<>(requestBody, headers);
-        ParameterizedTypeReference<List<PurchaseResponse>> responseType = new ParameterizedTypeReference<>() {
-        };
-        ResponseEntity<List<PurchaseResponse>> responseEntity = restTemplate.exchange(
-                productUrl + "/purchase",
-                POST,
-                requestEntity,
-                responseType
-        );
+            ResponseEntity<List<PurchaseResponse>> responseEntity = restTemplate.exchange(
+                    productUrl + "/purchase",
+                    POST,
+                    requestEntity,
+                    responseType
+            );
 
-        if (responseEntity.getStatusCode().isError()) {
-            throw new BusinessException("An error occurred while processing the products purchase: " + responseEntity.getStatusCode());
+            if (responseEntity.getStatusCode().isError()) {
+                throw new ProductServiceException("Failed to purchase products: " + responseEntity.getStatusCode());
+            }
+
+            return responseEntity.getBody();
+
+        } catch (Exception ex) {
+            throw new ProductServiceException("Error calling product service: " + ex.getMessage());
         }
-        return  responseEntity.getBody();
     }
 
 }

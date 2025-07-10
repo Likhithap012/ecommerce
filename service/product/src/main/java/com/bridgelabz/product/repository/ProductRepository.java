@@ -8,5 +8,6 @@ import java.util.List;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product,Integer> {
-    List<Product> findAllByIdInOrderById(List<Integer> productIds);
+    List<Product> findAllByIdInOrderById(List<Integer> ids);
+    boolean existsByNameIgnoreCase(String name);
 }

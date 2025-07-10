@@ -12,12 +12,12 @@
         <module name="discovery-server" />
         <module name="payment" />
         <module name="user-service" />
-        <module name="category" />
         <module name="gateway" />
         <module name="order" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="category" target="17" />
       <module name="product-service" target="17" />
     </bytecodeTargetLevel>
   </component>

@@ -1,22 +1,25 @@
 package com.learning.order.service;
 
+import com.learning.order.customer.CustomerResponse;
 import com.learning.order.dto.OrderLineRequest;
 import com.learning.order.dto.OrderRequest;
 import com.learning.order.dto.OrderResponse;
-import com.learning.order.exception.BusinessException;
+import com.learning.order.exception.*;
 import com.learning.order.mapper.OrderMapper;
-import com.learning.order.model.Order;
 import com.learning.order.payment.PaymentClient;
 import com.learning.order.payment.PaymentRequest;
 import com.learning.order.customer.CustomerClient;
 import com.learning.order.dto.PurchaseRequest;
 import com.learning.order.product.ProductClient;
 import com.learning.order.repository.OrderRepository;
+import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,12 +36,29 @@ public class OrderService {
 
     @Transactional
     public Integer createOrder(OrderRequest request) {
-        var customer = customerClient.findCustomerById(request.customerId())
-                .orElseThrow(() -> new BusinessException("Cannot create order:: No customer exists with the provided ID"));
+        CustomerResponse customer;
+        try {
+            customer = customerClient.findCustomerById(request.customerId())
+                    .orElseThrow(() -> new CustomerNotFoundException("No customer found with the provided ID: " + request.customerId()));
+        } catch (FeignException.NotFound ex) {
+            throw new CustomerNotFoundException("No customer found with the provided ID: " + request.customerId());
+        }
 
         var purchasedProducts = productClient.purchaseProducts(request.products());
 
-        var order = repository.save(mapper.toOrder(request));
+
+        // Save order with duplicate check
+        var order = mapper.toOrder(request);
+        try {
+            order = repository.save(order);
+        } catch (DataIntegrityViolationException ex) {
+            if (ex.getCause() != null && ex.getCause().getCause() instanceof SQLIntegrityConstraintViolationException sqlEx) {
+                if (sqlEx.getMessage().contains("UK3n2tbuf4k1male5dqi8rojcaj")) {
+                    throw new DuplicateOrderReferenceException("Order reference already exists.");
+                }
+            }
+            throw ex;
+        }
 
         for (PurchaseRequest purchaseRequest : request.products()) {
             orderLineService.saveOrderLine(
@@ -59,7 +79,11 @@ public class OrderService {
                 customer
         );
 
-        paymentClient.requestOrderPayment(paymentRequest);
+        try {
+            paymentClient.requestOrderPayment(paymentRequest);
+        } catch (Exception ex) {
+            throw new PaymentServiceException("Failed to process payment: " + ex.getMessage());
+        }
 
         return order.getId();
     }
@@ -77,25 +101,20 @@ public class OrderService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format("No order found with ID: %d", id)));
     }
 
-
-
     public List<OrderResponse> findOrdersByCustomerId(Integer customerId) {
         return repository.findAllByCustomerId(customerId)
                 .stream()
                 .map(mapper::fromOrder)
                 .collect(Collectors.toList());
     }
+
     @Transactional
     public void cancelOrder(Integer orderId) {
         if (!repository.existsById(orderId)) {
             throw new EntityNotFoundException("Order with ID " + orderId + " not found");
         }
 
-        // Step 1: Delete all order lines for this order
         orderLineService.deleteByOrderId(orderId);
-
-        // Step 2: Delete the order itself
         repository.deleteById(orderId);
     }
-
 }

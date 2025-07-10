@@ -19,9 +19,7 @@ public class OrderController {
     private final OrderService service;
 
     @PostMapping
-    public ResponseEntity<Integer> createOrder(
-            @RequestBody @Valid OrderRequest request
-    ) {
+    public ResponseEntity<Integer> createOrder(@RequestBody @Valid OrderRequest request) {
         return ResponseEntity.ok(this.service.createOrder(request));
     }
 
@@ -31,9 +29,7 @@ public class OrderController {
     }
 
     @GetMapping("/{order-id}")
-    public ResponseEntity<OrderResponse> findById(
-            @PathVariable("order-id") Integer orderId
-    ) {
+    public ResponseEntity<OrderResponse> findById(@PathVariable("order-id") Integer orderId) {
         return ResponseEntity.ok(this.service.findById(orderId));
     }
 
@@ -43,12 +39,10 @@ public class OrderController {
         return ResponseEntity.ok(" Order with ID " + orderId + " has been deleted successfully.");
     }
 
-
     @GetMapping("/customer/{customer-id}")
     public ResponseEntity<List<OrderResponse>> getOrdersByCustomer(
             @PathVariable("customer-id") Integer customerId) {
         return ResponseEntity.ok(service.findOrdersByCustomerId(customerId));
     }
-
 
 }

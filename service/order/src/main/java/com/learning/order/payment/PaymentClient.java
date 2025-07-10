@@ -12,4 +12,6 @@ public interface PaymentClient {
 
     @PostMapping
     Integer requestOrderPayment(@RequestBody PaymentRequest request);
+
+
 }
