@@ -1,120 +1,147 @@
 package com.learning.order.service;
 
-import com.learning.order.customer.CustomerResponse;
-import com.learning.order.dto.OrderLineRequest;
-import com.learning.order.dto.OrderRequest;
-import com.learning.order.dto.OrderResponse;
+import com.learning.order.client.CartClient;
+import com.learning.order.client.PaymentClient;
+import com.learning.order.client.ProductClient;
+import com.learning.order.dto.*;
+import com.learning.order.entity.Order;
+import com.learning.order.entity.OrderItem;
 import com.learning.order.exception.*;
 import com.learning.order.mapper.OrderMapper;
-import com.learning.order.payment.PaymentClient;
-import com.learning.order.payment.PaymentRequest;
-import com.learning.order.customer.CustomerClient;
-import com.learning.order.dto.PurchaseRequest;
-import com.learning.order.product.ProductClient;
 import com.learning.order.repository.OrderRepository;
 import feign.FeignException;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.SQLIntegrityConstraintViolationException;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OrderService {
 
-    private final OrderRepository repository;
-    private final OrderMapper mapper;
-    private final CustomerClient customerClient;
-    private final PaymentClient paymentClient;
+    private final OrderRepository orderRepository;
+    private final CartClient cartClient;
     private final ProductClient productClient;
-    private final OrderLineService orderLineService;
+    private final PaymentClient paymentClient;
+    private final OrderMapper orderMapper;
 
-    @Transactional
-    public Integer createOrder(OrderRequest request) {
-        CustomerResponse customer;
-        try {
-            customer = customerClient.findCustomerById(request.customerId())
-                    .orElseThrow(() -> new CustomerNotFoundException("No customer found with the provided ID: " + request.customerId()));
-        } catch (FeignException.NotFound ex) {
-            throw new CustomerNotFoundException("No customer found with the provided ID: " + request.customerId());
+    public OrderSuccessResponse placeOrder(OrderRequest request) {
+        List<CartItemResponse> cartItems = cartClient.getCartItems(request.customerId());
+        if (cartItems.isEmpty()) {
+            throw new CartEmptyException("Cart is empty for customer: " + request.customerId());
         }
 
-        var purchasedProducts = productClient.purchaseProducts(request.products());
+        // Create order items and reduce stock (no stock check as per request)
+        List<OrderItem> orderItems = cartItems.stream().map(item -> {
+            ProductResponse product = productClient.getProductById(item.productId());
+            productClient.reduceStock(product.id(), item.quantity()); // directly reduce
+            return orderMapper.toOrderItem(item, product);
+        }).toList();
 
+        // Calculate total
+        BigDecimal totalAmount = cartItems.stream()
+                .map(item -> {
+                    ProductResponse product = productClient.getProductById(item.productId());
+                    return product.price().multiply(BigDecimal.valueOf(item.quantity()));
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Save order with duplicate check
-        var order = mapper.toOrder(request);
+        // Save order
+        Order order = orderMapper.toOrder(request, orderItems, totalAmount);
+        orderItems.forEach(item -> item.setOrder(order));
+        Order savedOrder = orderRepository.save(order);
+
+        // Check if payment already exists
         try {
-            order = repository.save(order);
-        } catch (DataIntegrityViolationException ex) {
-            if (ex.getCause() != null && ex.getCause().getCause() instanceof SQLIntegrityConstraintViolationException sqlEx) {
-                if (sqlEx.getMessage().contains("UK3n2tbuf4k1male5dqi8rojcaj")) {
-                    throw new DuplicateOrderReferenceException("Order reference already exists.");
-                }
+            paymentClient.getPaymentByOrderId(savedOrder.getId());
+            throw new PaymentFailedException("Payment already exists for order ID: " + savedOrder.getId());
+        } catch (FeignException.NotFound e) {
+            // Proceed with payment
+            try {
+                paymentClient.createPayment(new PaymentRequest(
+                        totalAmount,
+                        request.paymentMethod(),
+                        savedOrder.getId(),
+                        request.customerId()
+                ));
+            } catch (Exception ex) {
+                throw new PaymentFailedException("Payment failed: " + ex.getMessage());
             }
-            throw ex;
+        } catch (Exception e) {
+            throw new PaymentFailedException("Error verifying existing payment: " + e.getMessage());
         }
 
-        for (PurchaseRequest purchaseRequest : request.products()) {
-            orderLineService.saveOrderLine(
-                    new OrderLineRequest(
-                            null,
-                            order.getId(),
-                            purchaseRequest.productId(),
-                            purchaseRequest.quantity()
-                    )
-            );
-        }
-
-        var paymentRequest = new PaymentRequest(
-                request.amount(),
-                request.paymentMethod(),
-                order.getId(),
-                order.getReference(),
-                customer
-        );
-
+        // Clear cart after payment
         try {
-            paymentClient.requestOrderPayment(paymentRequest);
-        } catch (Exception ex) {
-            throw new PaymentServiceException("Failed to process payment: " + ex.getMessage());
+            cartClient.clearCart(request.customerId());
+        } catch (FeignException.NotFound e) {
+            log.warn("Cart already empty for customerId: {}", request.customerId());
         }
 
-        return order.getId();
+        log.info("Order placed successfully for customerId={}, orderId={}", request.customerId(), savedOrder.getId());
+
+        return new OrderSuccessResponse(
+                "Order placed successfully",
+                savedOrder.getId(),
+                savedOrder.getCustomerId()
+        );
     }
 
-    public List<OrderResponse> findAllOrders() {
-        return repository.findAll()
-                .stream()
-                .map(mapper::fromOrder)
-                .collect(Collectors.toList());
-    }
-
-    public OrderResponse findById(Integer id) {
-        return repository.findById(id)
-                .map(mapper::fromOrder)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("No order found with ID: %d", id)));
-    }
-
-    public List<OrderResponse> findOrdersByCustomerId(Integer customerId) {
-        return repository.findAllByCustomerId(customerId)
-                .stream()
-                .map(mapper::fromOrder)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional
     public void cancelOrder(Integer orderId) {
-        if (!repository.existsById(orderId)) {
-            throw new EntityNotFoundException("Order with ID " + orderId + " not found");
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException("Order not found with ID: " + orderId));
+
+        if ("CANCELLED".equalsIgnoreCase(order.getStatus())) {
+            throw new InvalidOrderOperationException("Order is already cancelled");
         }
 
-        orderLineService.deleteByOrderId(orderId);
-        repository.deleteById(orderId);
+        order.setStatus("CANCELLED");
+        order.getItems().forEach(item ->
+                productClient.increaseStock(item.getProductId(), item.getQuantity()));
+        orderRepository.save(order);
+    }
+
+    public OrderPreviewResponse previewOrder(Integer customerId) {
+        List<CartItemResponse> cartItems = cartClient.getCartItems(customerId);
+        if (cartItems.isEmpty()) {
+            throw new CartEmptyException("Cart is empty for customer: " + customerId);
+        }
+
+        List<OrderPreviewResponse.CartItemSummary> itemSummaries = cartItems.stream().map(item -> {
+            ProductResponse product = productClient.getProductById(item.productId());
+            BigDecimal subtotal = product.price().multiply(BigDecimal.valueOf(item.quantity()));
+            return new OrderPreviewResponse.CartItemSummary(
+                    product.id(), product.name(), item.quantity(), product.price(), subtotal);
+        }).collect(Collectors.toList());
+
+        BigDecimal total = itemSummaries.stream()
+                .map(OrderPreviewResponse.CartItemSummary::subtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return new OrderPreviewResponse(null, customerId, total, itemSummaries);
+    }
+
+    public BigDecimal getTotalAmount(Integer orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException("Order not found with ID: " + orderId))
+                .getTotalAmount();
+    }
+
+    public List<OrderSummaryResponse> getOrdersByCustomer(Integer customerId) {
+        List<Order> orders = orderRepository.findAllByCustomerId(customerId);
+        return orders.stream()
+                .map(orderMapper::toSummaryResponse)
+                .toList();
+    }
+
+    public List<OrderSummaryResponse> getAllOrders() {
+        List<Order> orders = orderRepository.findAll();
+        return orders.stream()
+                .map(orderMapper::toSummaryResponse)
+                .toList();
     }
 }

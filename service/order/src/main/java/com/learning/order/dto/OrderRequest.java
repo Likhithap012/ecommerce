@@ -1,26 +1,8 @@
 package com.learning.order.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.learning.order.model.PaymentMethod;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import java.math.BigDecimal;
-import java.util.List;
 
-@JsonInclude(Include.NON_EMPTY)
 public record OrderRequest(
-
-        String reference,
-        @Positive(message = "Order amount should be positive")
-        BigDecimal amount,
-        @NotNull(message = "Payment method should be precised")
-        PaymentMethod paymentMethod,
-        @NotNull(message = "Customer should be present")
-        @Positive(message = "Customer ID must be positive")
         Integer customerId,
-        @NotEmpty(message = "You should at least purchase one product")
-        List<PurchaseRequest> products
+        PaymentMethod paymentMethod
 ) {}

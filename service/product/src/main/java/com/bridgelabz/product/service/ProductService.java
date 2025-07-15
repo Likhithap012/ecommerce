@@ -112,5 +112,24 @@ public class ProductService {
         }
         repository.deleteById(id);
     }
+    public void reduceStock(Integer productId, Integer quantity) {
+        Product product = repository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found with ID:: " + productId));
+
+        if (product.getAvailableQuantity() < quantity) {
+            throw new IllegalArgumentException("Not enough stock available for product ID: " + productId);
+        }
+
+        product.setAvailableQuantity(product.getAvailableQuantity() - quantity);
+        repository.save(product);
+    }
+
+    public void increaseStock(Integer productId, Integer quantity) {
+        Product product = repository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found with ID:: " + productId));
+
+        product.setAvailableQuantity(product.getAvailableQuantity() + quantity);
+        repository.save(product);
+    }
 
 }

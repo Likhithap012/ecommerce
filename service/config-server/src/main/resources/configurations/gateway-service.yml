@@ -2,6 +2,8 @@ server:
   port: 8222
 
 spring:
+  application:
+    name: api-gateway
   cloud:
     gateway:
       discovery:
@@ -12,28 +14,86 @@ spring:
           uri: lb:http://USER-SERVICE
           predicates:
             - Path=/api/v1/customers/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: userServiceCB
+                fallbackUri: forward:/fallback/user
+
         - id: order-service
           uri: lb:http://ORDER-SERVICE
           predicates:
             - Path=/api/v1/orders/**
-        - id: order-lines-service
-          uri: lb:http://ORDER-SERVICE
-          predicates:
-            - Path=/api/v1/order-lines/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: orderServiceCB
+                fallbackUri: forward:/fallback/order
+
         - id: product-service
           uri: lb:http://PRODUCT-SERVICE
           predicates:
             - Path=/api/v1/products/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: productServiceCB
+                fallbackUri: forward:/fallback/product
+
         - id: category-service
           uri: lb:http://PRODUCT-SERVICE
           predicates:
             - Path=/api/v1/categories/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: categoryServiceCB
+                fallbackUri: forward:/fallback/category
+
         - id: payment-service
           uri: lb:http://PAYMENT-SERVICE
           predicates:
             - Path=/api/v1/payments/**
-        - id: category-service
-          uri: lb:http://CATEGORY-SERVICE
-          predicates:
-            - Path=/api/v1/category/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: paymentServiceCB
+                fallbackUri: forward:/fallback/payment
 
+        - id: cart-service
+          uri: lb:http://CART-SERVICE
+          predicates:
+            - Path=/api/v1/cart/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: cartServiceCB
+                fallbackUri: forward:/fallback/cart
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      userServiceCB:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      orderServiceCB:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      productServiceCB:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      categoryServiceCB:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      paymentServiceCB:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      cartServiceCB:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s

@@ -1,33 +1,51 @@
 package com.learning.order.mapper;
 
-
+import com.learning.order.dto.CartItemResponse;
 import com.learning.order.dto.OrderRequest;
-import com.learning.order.dto.OrderResponse;
-import com.learning.order.model.Order;
-import org.springframework.stereotype.Service;
 
-@Service
+import com.learning.order.dto.OrderSummaryResponse;
+import com.learning.order.dto.ProductResponse;
+
+import com.learning.order.entity.Order;
+import com.learning.order.entity.OrderItem;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Component
 public class OrderMapper {
 
-
-    public Order toOrder(OrderRequest request) {
-        if (request == null) {
-            return null;
-        }
-        return Order.builder()
-                .reference(request.reference())
-                .paymentMethod(request.paymentMethod())
-                .customerId(request.customerId())
+    public OrderItem toOrderItem(CartItemResponse item, ProductResponse product) {
+        return OrderItem.builder()
+                .productId(item.productId()).quantity(item.quantity())
                 .build();
     }
 
-    public OrderResponse fromOrder(Order order) {
-        return new OrderResponse(
+    public Order toOrder(OrderRequest request, List<OrderItem> items, BigDecimal totalAmount) {
+        return Order.builder()
+                .customerId(request.customerId())
+                .paymentMethod(request.paymentMethod())
+                .orderDate(LocalDateTime.now())
+                .status("PLACED")
+                .totalAmount(totalAmount)
+                .items(items)
+                .build();
+    }
+    public OrderSummaryResponse toSummaryResponse(Order order) {
+        List<OrderSummaryResponse.OrderItemSummary> itemSummaries = order.getItems().stream()
+                .map(item -> new OrderSummaryResponse.OrderItemSummary(item.getProductId(), item.getQuantity()))
+                .toList();
+
+        return new OrderSummaryResponse(
                 order.getId(),
-                order.getReference(),
+                order.getStatus(),
                 order.getTotalAmount(),
-                order.getPaymentMethod(),
-                order.getCustomerId()
+                order.getOrderDate(),
+                order.getPaymentMethod().name(),
+                itemSummaries
         );
     }
+
 }

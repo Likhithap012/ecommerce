@@ -1,26 +1,22 @@
 package com.learning.payment.entity;
 
 import jakarta.persistence.*;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-@AllArgsConstructor
-@Builder
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "payment")
 @Getter
 @Setter
-@Entity
-@EntityListeners(AuditingEntityListener.class)
+@Builder
 @NoArgsConstructor
-@Table(name = "payment")
+@AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class Payment {
 
   @Id
@@ -30,17 +26,20 @@ public class Payment {
   private BigDecimal amount;
 
   @Enumerated(EnumType.STRING)
+  @Column(length = 50, nullable = false)
   private PaymentMethod paymentMethod;
 
-  @Column(unique = true,nullable = false)
+  @Column(unique = true, nullable = false)
   private Integer orderId;
 
+  @Column(nullable = false)
+  private Integer customerId;
+
   @CreatedDate
-  @Column(updatable = false, nullable = false)
+  @Column(updatable = false)
   private LocalDateTime createdDate;
 
   @LastModifiedDate
   @Column(insertable = false)
   private LocalDateTime lastModifiedDate;
-
 }

@@ -53,4 +53,19 @@ public class ProductController {
     public ResponseEntity<List<ProductResponse>> findAll() {
         return ResponseEntity.ok(service.findAll());
     }
+
+    @PutMapping("/{product-id}/reduce")
+    public ResponseEntity<String> reduceStock(@PathVariable("product-id") Integer productId,
+                                              @RequestParam("quantity") Integer quantity) {
+        service.reduceStock(productId, quantity);
+        return ResponseEntity.ok("Stock reduced successfully");
+    }
+
+    @PutMapping("/{product-id}/increase")
+    public ResponseEntity<String> increaseStock(@PathVariable("product-id") Integer productId,
+                                                @RequestParam("quantity") Integer quantity) {
+        service.increaseStock(productId, quantity);
+        return ResponseEntity.ok("Stock increased successfully");
+    }
+
 }

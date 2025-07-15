@@ -1,0 +1,17 @@
+server:
+  port: 8065
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/cartservice?createDatabaseIfNotExist=true
+    username: root
+    password: root
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+application:
+  config:
+    product-url: http://localhost:8050/api/v1/products
+    customer-url: http://localhost:8090/api/v1/customers
