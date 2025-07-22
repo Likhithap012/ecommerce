@@ -4,24 +4,44 @@ server:
 spring:
   application:
     name: api-gateway
+    jwt:
+      secret: bXktc3VwZXItc2VjdXJlLWp3dC1zZWNyZXQtMjAyNS1rZXkh
   cloud:
     gateway:
       discovery:
         locator:
           enabled: true
+      httpclient:
+        connect-timeout: 5000
+        response-timeout: 30s
       routes:
         - id: user-service
-          uri: lb:http://USER-SERVICE
+          uri: lb://USER-SERVICE
           predicates:
             - Path=/api/v1/customers/**
+#          filters:
+#            - name: CircuitBreaker
+#              args:
+#                name: userServiceCB
+#                fallbackUri: forward:/fallback/user
+
+        - id: user-service-auth
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/api/v1/auth/**
           filters:
-            - name: CircuitBreaker
-              args:
-                name: userServiceCB
-                fallbackUri: forward:/fallback/user
+            - RemoveRequestHeader=Cookie
+            - RemoveRequestHeader=Origin
+            - RemoveRequestHeader=Referer
+#          filters:
+#            - RewritePath=/api/auth/(?<segment>.*), /api/auth/${segment}
+#            - name: CircuitBreaker
+#              args:
+#                name: userServiceAuthCB
+#                fallbackUri: forward:/fallback/user
 
         - id: order-service
-          uri: lb:http://ORDER-SERVICE
+          uri: lb://ORDER-SERVICE
           predicates:
             - Path=/api/v1/orders/**
           filters:
@@ -31,17 +51,18 @@ spring:
                 fallbackUri: forward:/fallback/order
 
         - id: product-service
-          uri: lb:http://PRODUCT-SERVICE
+          uri: lb://PRODUCT-SERVICE
           predicates:
             - Path=/api/v1/products/**
           filters:
+            - name: AuthenticationFilter
             - name: CircuitBreaker
               args:
                 name: productServiceCB
                 fallbackUri: forward:/fallback/product
 
         - id: category-service
-          uri: lb:http://PRODUCT-SERVICE
+          uri: lb://PRODUCT-SERVICE
           predicates:
             - Path=/api/v1/categories/**
           filters:
@@ -51,7 +72,7 @@ spring:
                 fallbackUri: forward:/fallback/category
 
         - id: payment-service
-          uri: lb:http://PAYMENT-SERVICE
+          uri: lb://PAYMENT-SERVICE
           predicates:
             - Path=/api/v1/payments/**
           filters:
@@ -61,7 +82,7 @@ spring:
                 fallbackUri: forward:/fallback/payment
 
         - id: cart-service
-          uri: lb:http://CART-SERVICE
+          uri: lb://CART-SERVICE
           predicates:
             - Path=/api/v1/cart/**
           filters:
@@ -77,23 +98,57 @@ resilience4j:
         slidingWindowSize: 10
         failureRateThreshold: 50
         waitDurationInOpenState: 10s
+        slowCallDurationThreshold: 10s
+        slowCallRateThreshold: 50
+        permittedNumberOfCallsInHalfOpenState: 3
+        minimumNumberOfCalls: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        recordExceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.client.HttpServerErrorException
+
+      userServiceAuthCB:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        slowCallDurationThreshold: 10s
+        slowCallRateThreshold: 50
+        permittedNumberOfCallsInHalfOpenState: 3
+        minimumNumberOfCalls: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        recordExceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.client.HttpServerErrorException
+
       orderServiceCB:
         slidingWindowSize: 10
         failureRateThreshold: 50
         waitDurationInOpenState: 10s
+
       productServiceCB:
         slidingWindowSize: 10
         failureRateThreshold: 50
         waitDurationInOpenState: 10s
+
       categoryServiceCB:
         slidingWindowSize: 10
         failureRateThreshold: 50
         waitDurationInOpenState: 10s
+
       paymentServiceCB:
         slidingWindowSize: 10
         failureRateThreshold: 50
         waitDurationInOpenState: 10s
+
       cartServiceCB:
         slidingWindowSize: 10
         failureRateThreshold: 50
         waitDurationInOpenState: 10s
+
+      emailService:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        minimumNumberOfCalls: 5

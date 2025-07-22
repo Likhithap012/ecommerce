@@ -7,7 +7,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -30,6 +29,6 @@ public class CartController {
     @DeleteMapping("/clear/{cartItemId}")
     public ResponseEntity<String > removeItem(@PathVariable Integer cartItemId) {
         service.removeItem(cartItemId);
-        return ResponseEntity.ok(cartItemId+" deleted successfully.");
+        return ResponseEntity.ok(cartItemId+" Deleted successfully.");
     }
 }

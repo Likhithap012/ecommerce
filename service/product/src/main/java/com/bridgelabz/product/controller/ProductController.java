@@ -43,7 +43,6 @@ public class ProductController {
         return ResponseEntity.ok("Product deleted successfully");
     }
 
-
     @GetMapping("/{product-id}")
     public ResponseEntity<ProductResponse> findById(@PathVariable("product-id") Integer productId) {
         return ResponseEntity.ok(service.findById(productId));

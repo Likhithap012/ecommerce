@@ -21,8 +21,6 @@ spring:
     user: ${spring.datasource.username}
     password: ${spring.datasource.password}
 
-
-
 logging:
   level:
     org.flywaydb: DEBUG

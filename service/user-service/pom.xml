@@ -62,7 +62,108 @@
 			<artifactId>mockito-core</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!--  Spring Security Test (important for Authentication mocking) -->
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+		<!-- Spring Boot Core Dependencies -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
 
+		<!-- Spring Data JPA -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+
+		<!-- MySQL Driver -->
+		<dependency>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- Spring Security -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+
+		<!-- JWT -->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>0.11.5</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>0.11.5</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
+			<version>0.11.5</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- Spring Mail -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+
+		<!-- Feign Client (for inter-service communication) -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-openfeign</artifactId>
+		</dependency>
+
+		<!-- Validation -->
+		<dependency>
+			<groupId>jakarta.validation</groupId>
+			<artifactId>jakarta.validation-api</artifactId>
+		</dependency>
+
+		<!-- Lombok -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- Swagger/OpenAPI (optional) -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.3.0</version>
+		</dependency>
+
+		<!-- Actuator (optional) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+		<!-- Test -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
@@ -84,7 +185,17 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk18on</artifactId>
+			<version>1.80</version>
+			<scope>compile</scope>
+		</dependency>
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-core</artifactId>
+        </dependency>
+    </dependencies>
 	<dependencyManagement>
 		<dependencies>
 			<dependency>

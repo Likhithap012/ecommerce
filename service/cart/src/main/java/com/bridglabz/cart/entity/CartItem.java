@@ -1,8 +1,9 @@
 package com.bridglabz.cart.entity;
 
-import com.bridglabz.cart.dto.CartItemResponse;
+
 import jakarta.persistence.*;
 import lombok.*;
+
 
 @Entity
 @Getter
