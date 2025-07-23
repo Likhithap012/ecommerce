@@ -74,7 +74,4 @@ public class RouteValidator {
             path -> openEndpoints.stream().noneMatch(path::equals);
 
 
-
-
-
 }
