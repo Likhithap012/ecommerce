@@ -10,6 +10,7 @@ import com.learning.order.exception.*;
 import com.learning.order.mapper.OrderMapper;
 import com.learning.order.repository.OrderRepository;
 import feign.FeignException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class OrderService {
 
     private final OrderRepository orderRepository;
@@ -98,10 +100,9 @@ public class OrderService {
         if ("CANCELLED".equalsIgnoreCase(order.getStatus())) {
             throw new InvalidOrderOperationException("Order is already cancelled");
         }
-
-        order.setStatus("CANCELLED");
         order.getItems().forEach(item ->
                 productClient.increaseStock(item.getProductId(), item.getQuantity()));
+        order.setStatus("CANCELLED");
         orderRepository.save(order);
     }
 
@@ -122,7 +123,7 @@ public class OrderService {
                 .map(OrderPreviewResponse.CartItemSummary::subtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        return new OrderPreviewResponse(null, customerId, total, itemSummaries);
+        return new OrderPreviewResponse(customerId, total, itemSummaries);
     }
 
     public BigDecimal getTotalAmount(Integer orderId) {

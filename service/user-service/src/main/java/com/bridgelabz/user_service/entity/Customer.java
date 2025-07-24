@@ -35,15 +35,9 @@ public class Customer  {
 
     private String email;
 
-    private String password;
-
     private boolean verified;
 
-    private String otp;
-
     private String resetToken;
-    private java.time.LocalDateTime resetTokenExpiry;
-
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id", referencedColumnName = "id")
     private Address address;

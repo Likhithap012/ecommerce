@@ -4,6 +4,7 @@ import com.bridgelabz.user_service.dto.CustomerRequest;
 import com.bridgelabz.user_service.dto.CustomerResponse;
 import com.bridgelabz.user_service.service.CustomerService;
 import jakarta.validation.Valid;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/customers")
 @RequiredArgsConstructor
+
 public class CustomerController {
 
     private final CustomerService service;
@@ -32,7 +34,6 @@ public class CustomerController {
         this.service.updateCustomer(customerId, request);
         return ResponseEntity.ok("Customer updated successfully.");
     }
-
 
     @GetMapping
     public ResponseEntity<List<CustomerResponse>> findAll() {

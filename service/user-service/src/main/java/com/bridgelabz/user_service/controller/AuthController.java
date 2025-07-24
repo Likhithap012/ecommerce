@@ -24,11 +24,6 @@ public class AuthController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/verify")
-    public ResponseEntity<String> verifyEmail(@RequestParam String email) {
-        return ResponseEntity.ok(authService.verifyEmail(email));
-    }
-
     @PostMapping("/login/password")
     public ResponseEntity<AuthResponseDTO> loginWithPassword(@RequestBody @Valid LoginRequestDTO req) {
         return ResponseEntity.ok(authService.loginWithPassword(req));
@@ -37,12 +32,6 @@ public class AuthController {
     @PostMapping("/login/otp")
     public ResponseEntity<AuthResponseDTO> loginWithOtp(@RequestBody @Valid OtpLoginRequestDTO req) {
         return ResponseEntity.ok(authService.loginWithOtp(req.email(), req.otp()));
-    }
-
-    @GetMapping("/validate")
-    public ResponseEntity<String> validateToken(@RequestParam String token) {
-        boolean valid = authService.validateToken(token);
-        return ResponseEntity.ok(valid ? "Token is valid" : "Token is invalid");
     }
 
     @GetMapping("/currentUser")

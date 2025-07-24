@@ -47,26 +47,17 @@ public class AuthService {
         return "Registered successfully. Check your email for OTP.";
     }
 
-    public String verifyEmail(String email) {
-        User user = userRepo.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        user.setVerified(true);
-        userRepo.save(user);
-        return "Email verified successfully.";
-    }
 
     public AuthResponseDTO loginWithPassword(LoginRequestDTO request) {
         User user = userRepo.findByEmail(request.email())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (!user.isVerified()) throw new RuntimeException("Please verify your email first.");
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password())
         );
 
         String token = jwtUtil.generateToken(user.getEmail());
-        return new AuthResponseDTO(token, user.getFirstname(), null);
+        return new AuthResponseDTO(token, user.getFirstname());
     }
 
     public AuthResponseDTO loginWithOtp(String email, String otp) {
@@ -76,7 +67,7 @@ public class AuthService {
         if (!user.getOtp().equals(otp)) throw new RuntimeException("Invalid OTP.");
 
         String token = jwtUtil.generateToken(user.getEmail());
-        return new AuthResponseDTO(token, user.getFirstname(), null);
+        return new AuthResponseDTO(token, user.getFirstname());
     }
 
     public boolean validateToken(String token) {

@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public record OrderPreviewResponse(
-        Integer orderId,
         Integer customerId,
         BigDecimal totalAmount,
         List<CartItemSummary> items
