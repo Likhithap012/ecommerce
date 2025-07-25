@@ -1,7 +1,6 @@
-package com.bridgelabz.user_service.security;
+package com.bridgelabz.user_service.service;
 
 import com.bridgelabz.user_service.entity.User;
-import com.bridgelabz.user_service.repository.CustomerRepository;
 import com.bridgelabz.user_service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

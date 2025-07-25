@@ -26,4 +26,6 @@ public class User {
     private String otp;
     private String resetToken;
     private LocalDateTime resetTokenExpiry;
+    @Embedded
+    private Address address;
 }

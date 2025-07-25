@@ -1,6 +1,6 @@
 package com.bridglabz.cart.dto;
 
-public record CustomerResponse(
+public record UserResponse(
         Integer id,
         String firstname,
         String lastname,

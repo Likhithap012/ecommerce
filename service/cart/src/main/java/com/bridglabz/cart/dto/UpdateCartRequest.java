@@ -1,8 +1,5 @@
 package com.bridglabz.cart.dto;
 
-
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,7 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddToCartRequest {
+public class UpdateCartRequest {
     private Integer productId;
-    private Integer quantity;
+    private Integer quantity; // New quantity
 }
+

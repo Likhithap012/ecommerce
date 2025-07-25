@@ -57,7 +57,7 @@ public class AuthService {
         );
 
         String token = jwtUtil.generateToken(user.getEmail());
-        return new AuthResponseDTO(token, user.getFirstname());
+        return new AuthResponseDTO(token);
     }
 
     public AuthResponseDTO loginWithOtp(String email, String otp) {
@@ -67,7 +67,7 @@ public class AuthService {
         if (!user.getOtp().equals(otp)) throw new RuntimeException("Invalid OTP.");
 
         String token = jwtUtil.generateToken(user.getEmail());
-        return new AuthResponseDTO(token, user.getFirstname());
+        return new AuthResponseDTO(token);
     }
 
     public boolean validateToken(String token) {

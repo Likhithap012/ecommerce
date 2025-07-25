@@ -1,6 +1,5 @@
 package com.bridgelabz.user_service.security;
 
-import com.bridgelabz.user_service.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,14 +28,15 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**").permitAll()
-                        // Customer-related endpoints
-                        .requestMatchers("/api/v1/customers").permitAll()// POST and GET
-                        .requestMatchers("/api/v1/customers/**").permitAll()
+                        // Allow all authentication related endpoints
+                        .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login/**").permitAll()
+                        // Secure other user endpoints
+                        .requestMatchers("/api/v1/auth/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
