@@ -33,16 +33,18 @@ public class AuthenticationFilter implements WebFilter {
 
         try {
             jwtUtil.validateToken(token);
-            String userId = jwtUtil.extractUsername(token); // Or extract userId if you're storing it
 
-            //  Add userId as a request header to forward it to microservices
+            String email = jwtUtil.extractEmail(token);      // subject
+            Long userId = jwtUtil.extractUserId(token);      // claim
+
             ServerWebExchange mutatedExchange = exchange.mutate()
-                    .request(builder -> builder.header("X-User-Id", userId))
+                    .request(builder -> builder
+                            .header("X-User-Id", userId.toString())
+                            .header("X-User-Email", email))
                     .build();
 
-            // For Spring Security context (optional, but useful)
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                    userId,
+                    email,
                     null,
                     Collections.emptyList()
             );

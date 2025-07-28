@@ -21,8 +21,8 @@ public class CartController {
 
     @PostMapping("/add")
     public ResponseEntity<String> addToCart(@RequestBody AddToCartRequest request,
-                                            @RequestHeader("X-User-Id") String email) {
-        cartService.addToCart(email, request);
+                                            @RequestHeader("X-User-Id") Long userId) {
+        cartService.addToCart(userId, request);
         return ResponseEntity.ok("Product added to cart");
     }
 

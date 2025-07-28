@@ -27,7 +27,8 @@ public class JwtUtil {
         key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(String email) {
+    // Modified: Generate token using email and userId
+    public String generateToken(String email, Long userId) {
         long expirationInMillis = expiration * 86400000;
         Date expiryDate = new Date(System.currentTimeMillis() + expirationInMillis);
 
@@ -35,17 +36,25 @@ public class JwtUtil {
 
         return Jwts.builder()
                 .setSubject(email)
+                .claim("userId", userId)
                 .setIssuedAt(new Date())
                 .setExpiration(expiryDate)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-
+    // Extract email from token
     public String extractEmail(String token) {
         return getClaims(token).getSubject();
     }
 
+    // New: Extract userId from token
+    public Long extractUserId(String token) {
+        Claims claims = getClaims(token);
+        return claims.get("userId", Long.class);
+    }
+
+    // Validate token
     public boolean isValid(String token) {
         try {
             getClaims(token);
@@ -55,6 +64,7 @@ public class JwtUtil {
         }
     }
 
+    // Internal method to get claims
     private Claims getClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
